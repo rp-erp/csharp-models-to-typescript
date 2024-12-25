@@ -12,6 +12,9 @@ namespace CSharpModelsToJson
         public IEnumerable<Field> Fields { get; set; }
         public IEnumerable<Property> Properties { get; set; }
         public IEnumerable<string> BaseClasses { get; set; }
+        public bool Obsolete { get; set; }
+        public string ObsoleteMessage { get; set; }
+
     }
 
     public class Field
@@ -24,6 +27,8 @@ namespace CSharpModelsToJson
     {
         public string Identifier { get; set; }
         public string Type { get; set; }
+        public bool Obsolete { get; set; }
+        public string ObsoleteMessage { get; set; }
     }
 
     public class ModelCollector : CSharpSyntaxWalker
@@ -53,10 +58,10 @@ namespace CSharpModelsToJson
                                 .Where(field => IsAccessible(field.Modifiers))
                                 .Where(property => !IsIgnored(property.AttributeLists))
                                 .Select((field) => new Field
-                                    {
-                                        Identifier = field.Identifier.ToString(),
-                                        Type = field.Type.ToString(),
-                                    }),
+                                {
+                                    Identifier = field.Identifier.ToString(),
+                                    Type = field.Type.ToString(),
+                                }),
                 Properties = node.Members.OfType<PropertyDeclarationSyntax>()
                                 .Where(property => IsAccessible(property.Modifiers))
                                 .Where(property => !IsIgnored(property.AttributeLists))
@@ -81,13 +86,16 @@ namespace CSharpModelsToJson
                                 .Where(property => !IsIgnored(property.AttributeLists))
                                 .Select(ConvertProperty),
                 BaseClasses = node.BaseList?.Types.Select(s => s.ToString()),
+                Obsolete = Util.IsObsolete(node.AttributeLists),
+                ObsoleteMessage = Util.GetObsoleteMessage(node.AttributeLists),
             };
         }
 
-        private static bool IsIgnored(SyntaxList<AttributeListSyntax> propertyAttributeLists) => 
-            propertyAttributeLists.Any(attributeList => 
-                attributeList.Attributes.Any(attribute => 
-                    attribute.Name.ToString().Equals("JsonIgnore")));
+        private static bool IsIgnored(SyntaxList<AttributeListSyntax> propertyAttributeLists) =>
+            propertyAttributeLists.Any(attributeList =>
+                attributeList.Attributes.Any(attribute =>
+                    attribute.Name.ToString().Equals("JsonIgnore") ||
+                    attribute.Name.ToString().Equals("IgnoreDataMember")));
 
         private static bool IsAccessible(SyntaxTokenList modifiers) => modifiers.All(modifier =>
             modifier.ToString() != "const" &&
@@ -105,6 +113,8 @@ namespace CSharpModelsToJson
         {
             Identifier = property.Identifier.ToString(),
             Type = property.Type.ToString(),
+            Obsolete = Util.IsObsolete(property.AttributeLists),
+            ObsoleteMessage = Util.GetObsoleteMessage(property.AttributeLists)
         };
     }
 }

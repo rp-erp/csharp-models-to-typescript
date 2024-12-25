@@ -1,6 +1,6 @@
 {
   "name": "csharp-models-to-typescript",
-  "version": "0.23.0",
+  "version": "1.1.0",
   "title": "C# models to TypeScript",
   "author": "Jonathan Svenheden <jonathan@svenheden.com>",
   "license": "MIT",
@@ -14,7 +14,13 @@
   "bin": {
     "csharp-models-to-typescript": "./index.js"
   },
+  "scripts": {
+    "test": "rimraf -I ./test-files/api.d.ts && node index.js --config=./test-files/test-config.json && node ./test-files/test-file-exists.js --config=./test-files/test-config.json"
+  },
   "dependencies": {
     "camelcase": "^6.0.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.7"
   }
 }
