@@ -25,7 +25,7 @@ namespace CSharpModelsToJson
                 .AddJsonFile(args[0], true, true)
                 .Build();
 
-            List<string> includes = new List<string>() { @"C:\NguyenNTM\RPProject\RPGlobal\RPGlobal\*.cs" };
+            List<string> includes = new List<string>();
             List<string> excludes = new List<string>();
 
             config.Bind("include", includes);
